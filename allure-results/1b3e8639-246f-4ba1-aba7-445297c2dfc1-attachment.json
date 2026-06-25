@@ -1,14 +1,14 @@
 {
-    "Date": "Thu, 25 Jun 2026 09:43:33 GMT",
+    "Date": "Thu, 25 Jun 2026 10:14:01 GMT",
     "Server": "Apache/2.4.52 (Ubuntu)",
     "Cache-Control": "max-age=120, public",
     "Access-Control-Allow-Origin": "*",
     "Access-Control-Expose-Headers": "Content-Disposition",
     "Upgrade": "h2",
     "Connection": "Upgrade, close",
-    "ETag": "\"54d29b8c39a728a829c633ec2a43e67a-gzip\"",
+    "ETag": "\"78d16db313546de86bc42e6cfec302b5-gzip\"",
     "Vary": "Accept-Encoding",
     "Content-Encoding": "gzip",
-    "Content-Length": "602",
+    "Content-Length": "349",
     "Content-Type": "application/json"
 }

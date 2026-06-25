@@ -15,7 +15,7 @@ pipeline{
             stages{
                 stage('install deps'){
                     steps{
-                        sh 'npm ci'
+                        sh 'npm install'
                             
                     }
                 }
@@ -25,7 +25,8 @@ pipeline{
                     steps{
                         sh '''
                             echo "Suppression du cache Allure..."
-                            rm -rf allure-results
+                            rm -rf allure-results\
+                            rm -rf package-lock.json\
                             mkdir -p allure-results
                             echo "Dossier allure-results nettoyé avec succès"
                         '''
