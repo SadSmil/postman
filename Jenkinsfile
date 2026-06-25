@@ -35,7 +35,7 @@ pipeline{
                stage('run newman tests') {
                     steps {
                         script {
-                            def baseCmd = "newman run collection1.json"
+                            def baseCmd = "npx newman run collection1.json"
 
                             if (params.ALLURE) {
                                 sh "${baseCmd} -r allure,cli --reporter-allure-export allure-results"
@@ -54,7 +54,7 @@ pipeline{
             script{
                 if(params.ALLURE){
                     unstash 'allure-results'
-                    //archiveArtifacts 'allure-results/*'
+                    archiveArtifacts 'allure-results/*'
                     allure includeProperties: false,
                            jdk: '',
                            results: [[path: 'allure-results/']]
