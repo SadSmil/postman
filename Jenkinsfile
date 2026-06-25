@@ -16,7 +16,7 @@ pipeline{
                 stage('install deps'){
                     steps{
                         sh 'npm install'
-                        sh 'npm install --save-dev newman-reporter-allure'
+                        sh 'npm install -g newman-reporter-allure'
                             
                     }
                 }
@@ -39,7 +39,7 @@ pipeline{
                             def baseCmd = "npx newman run collection1.json"
 
                             if (params.ALLURE) {
-                                sh "${baseCmd} -r allure,cli --reporter-allure-export allure-results"
+                                sh "${baseCmd} -r cli,allure --reporter-allure-export allure-results"
                                 echo "je suis dans le if de allure"
                                 stash name: 'allure-results', includes: 'allure-results/*'
                             } else {
