@@ -24,11 +24,11 @@ pipeline{
                     
                     steps{
                         sh '''
-                            echo "Suppression du cache Allure..."
-                            rm -rf allure-results\
-                            mkdir -p allure-results
-                            echo "Dossier allure-results nettoyé avec succès"
-                        '''
+                    echo "Suppression du cache Allure..."
+                    rm -rf allure-results
+                    mkdir -p allure-results
+                    echo "Dossier allure-results nettoyé avec succès"
+                    '''
                     }
                 }
         
