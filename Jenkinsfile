@@ -8,7 +8,7 @@ pipeline{
         stage('global stage'){
              agent {
                 docker { 
-                    image 'postman/newman:latest'
+                    image 'node:latest'
                     args '-u=root --entrypoint='
                 }  
             }
@@ -16,7 +16,8 @@ pipeline{
                 stage('install deps'){
                     steps{
                         sh 'npm install'
-                        sh 'npm install -g newman-reporter-allure'
+                        sh 'npm install newman'
+                        sh 'npm install newman-reporter-allure'
                             
                     }
                 }
