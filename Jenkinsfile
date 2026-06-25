@@ -32,7 +32,6 @@ pipeline {
                     steps {
                         script {
                             def baseCmd = "newman run collection1.json"                            
-                            // On utilise catchError pour être sûr que le stash s'exécute même si Newman échoue
                             catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
                                 if (params.ALLURE) {
                                     sh "${baseCmd} -r cli,allure --reporter-allure-export allure-results"
@@ -41,8 +40,9 @@ pipeline {
                                 }
                             }
 
+                            // CORRECTION ICI : On cible directement le dossier complet sans le pattern bloquant
                             if (params.ALLURE) {
-                                stash name: 'allure-results-stash', includes: 'allure-results/**', allowEmpty: true
+                                stash name: 'allure-results-stash', includes: 'allure-results/'
                             }
                         }
                     }
@@ -54,7 +54,12 @@ pipeline {
         always {
             script {
                 if (params.ALLURE) {
+                    // On nettoie d'abord l'espace de l'agent Jenkins pour éviter les conflits
+                    sh 'rm -rf allure-results' 
+                    
                     unstash 'allure-results-stash'
+                    
+                    // Appel du plugin Allure
                     allure includeProperties: false,
                            jdk: '',
                            results: [[path: 'allure-results']]
