@@ -18,6 +18,7 @@ pipeline{
                         sh 'npm install'
                         sh 'npm install newman'
                         sh 'npm install newman-reporter-allure'
+                        sh 'apk add --no-cache openjdk17-jre'
                             
                     }
                 }
