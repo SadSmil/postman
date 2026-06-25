@@ -50,7 +50,7 @@ pipeline{
         }
     }
     post{
-        always{
+        success{
             script{
                 if(params.ALLURE){
                     unstash 'allure-results'

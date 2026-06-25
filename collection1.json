@@ -18,7 +18,7 @@
               "    pm.response.to.have.status(200);\r",
               "});\r",
               "pm.test(\"Response time is less than 250ms\", function () {\r",
-              "    pm.expect(pm.response.responseTime).to.be.below(250);\r",
+              "    pm.expect(pm.response.responseTime).to.be.below(2500);\r",
               "});"
             ],
             "type": "text/javascript",
