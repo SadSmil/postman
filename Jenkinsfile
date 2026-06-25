@@ -31,8 +31,7 @@ pipeline {
                 stage('Run Newman Tests') {
                     steps {
                         script {
-                            def baseCmd = "newman run collection1.json"
-                            
+                            def baseCmd = "newman run collection1.json"                            
                             // On utilise catchError pour être sûr que le stash s'exécute même si Newman échoue
                             catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
                                 if (params.ALLURE) {
