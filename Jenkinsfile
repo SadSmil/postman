@@ -39,6 +39,7 @@ pipeline{
 
                             if (params.ALLURE) {
                                 sh "${baseCmd} -r allure,cli --reporter-allure-export allure-results"
+                                echo "je suis dans le if de allure"
                                 stash name: 'allure-results', includes: 'allure-results/*'
                             } else {
                                 sh "${baseCmd} -r htmlextra,cli --reporter-htmlextra-export newman-report.html"
