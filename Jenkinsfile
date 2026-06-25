@@ -14,7 +14,6 @@ pipeline {
             stages {
                 stage('Install Newman & Reporters') {
                     steps {
-                        // Installation globale (-g) pour contourner le problème de nom de dossier de Jenkins
                         sh 'npm install -g newman newman-reporter-allure newman-reporter-htmlextra'
                     }
                 }
@@ -32,22 +31,19 @@ pipeline {
                 stage('Run Newman Tests') {
                     steps {
                         script {
-                            // On appelle newman directement (sans npx car installé avec -g)
                             def baseCmd = "newman run collection1.json"
                             
-                            try {
+                            // On utilise catchError pour être sûr que le stash s'exécute même si Newman échoue
+                            catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
                                 if (params.ALLURE) {
                                     sh "${baseCmd} -r cli,allure --reporter-allure-export allure-results"
                                 } else {
                                     sh "${baseCmd} -r htmlextra,cli --reporter-htmlextra-export newman-report.html"
                                 }
-                            } catch (Exception e) {
-                                currentBuild.result = 'UNSTABLE'
-                                echo "Certains tests Postman ont échoué, mais on continue pour générer le rapport."
-                            } finally {
-                                if (params.ALLURE) {
-                                    stash name: 'allure-results-stash', includes: 'allure-results/**', allowEmpty: true
-                                }
+                            }
+
+                            if (params.ALLURE) {
+                                stash name: 'allure-results-stash', includes: 'allure-results/**', allowEmpty: true
                             }
                         }
                     }
@@ -59,14 +55,10 @@ pipeline {
         always {
             script {
                 if (params.ALLURE) {
-                    try {
-                        unstash 'allure-results-stash'
-                        allure includeProperties: false,
-                               jdk: '',
-                               results: [[path: 'allure-results']]
-                    } catch (Exception e) {
-                        echo "Impossible de générer le rapport Allure : ${e.message}"
-                    }
+                    unstash 'allure-results-stash'
+                    allure includeProperties: false,
+                           jdk: '',
+                           results: [[path: 'allure-results']]
                 } else {
                     archiveArtifacts artifacts: 'newman-report.html', allowEmptyArchive: true
                 }
