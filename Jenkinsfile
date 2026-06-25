@@ -54,7 +54,7 @@ pipeline{
             script{
                 if(params.ALLURE){
                     unstash 'allure-results'
-                    archiveArtifacts 'allure-results/*'
+                    //archiveArtifacts 'allure-results/*'
                     allure includeProperties: false,
                            jdk: '',
                            results: [[path: 'allure-results/']]
