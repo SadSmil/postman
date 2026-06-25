@@ -1,51 +1,55 @@
-pipeline{
+pipeline {
     agent any
-    parameters{
-        booleanParam(name:'ALLURE', defaultValue: false, description: 'generation de rapport allure')
-        //choice(name: 'browser', choices: ['firefox','chromium','webkit'], description: 'Choisissez le choix du navigateur')   
+    parameters {
+        booleanParam(name: 'ALLURE', defaultValue: true, description: 'Génération du rapport Allure (si décoché, utilise htmlextra)')
     }
-    stages{
-        stage('global stage'){
-             agent {
+    stages {
+        stage('Global Stage') {
+            agent {
                 docker { 
-                    image 'node:latest'
+                    image 'node:20-alpine' // Utiliser une version LTS stable est plus safe que 'latest'
                     args '-u=root --entrypoint='
                 }  
             }
-            stages{
-                stage('install deps'){
-                    steps{
-                        sh 'npm install'
-                        sh 'npm install newman'
-                        sh 'npm install newman-reporter-allure'
-                        sh 'apk add --no-cache openjdk17-jre'
-                            
+            stages {
+                stage('Install Deps') {
+                    steps {
+                        // Utilisation de npm ci ou installation locale propre
+                        sh 'npm init -y' // Sécurité si pas de package.json existant
+                        sh 'npm install newman newman-reporter-allure newman-reporter-htmlextra'
                     }
                 }
 
-                stage('clean allure results'){
-                    
-                    steps{
+                stage('Clean Allure Results') {
+                    steps {
                         sh '''
-                    echo "Suppression du cache Allure..."
-                    rm -rf allure-results
-                    mkdir -p allure-results
-                    echo "Dossier allure-results nettoyé avec succès"
-                    '''
+                        echo "Suppression du cache Allure..."
+                        rm -rf allure-results newman-report.html
+                        mkdir -p allure-results
+                        '''
                     }
                 }
         
-               stage('run newman tests') {
+                stage('Run Newman Tests') {
                     steps {
                         script {
                             def baseCmd = "npx newman run collection1.json"
-
-                            if (params.ALLURE) {
-                                sh "${baseCmd} -r cli,allure --reporter-allure-export allure-results"
-                                echo "je suis dans le if de allure"
-                                stash name: 'allure-results', includes: 'allure-results/*'
-                            } else {
-                                sh "${baseCmd} -r htmlextra,cli --reporter-htmlextra-export newman-report.html"
+                            
+                            // block try/catch ou gestion de statut pour éviter que le pipeline crash direct en cas de test KO
+                            try {
+                                if (params.ALLURE) {
+                                    sh "${baseCmd} -r cli,allure --reporter-allure-export allure-results"
+                                } else {
+                                    sh "${baseCmd} -r htmlextra,cli --reporter-htmlextra-export newman-report.html"
+                                }
+                            } catch (Exception e) {
+                                currentBuild.result = 'UNSTABLE'
+                                echo "Certains tests Postman ont échoué, mais on continue pour générer le rapport."
+                            } finally {
+                                if (params.ALLURE) {
+                                    // Le stash doit être fait ICI, à l'intérieur de l'agent Docker, juste après le run
+                                    stash name: 'allure-results-stash', includes: 'allure-results/**'
+                                }
                             }
                         }
                     }
@@ -53,15 +57,23 @@ pipeline{
             }
         }
     }
-    post{
-        success{
-            script{
-                if(params.ALLURE){
-                    unstash 'allure-results'
-                    archiveArtifacts 'allure-results/*'
-                    allure includeProperties: false,
-                           jdk: '',
-                           results: [[path: 'allure-results/']]
+    post {
+        always { // 'always' pour générer le rapport même si les tests échouent
+            script {
+                if (params.ALLURE) {
+                    try {
+                        unstash 'allure-results-stash'
+                        
+                        // Déclenchement du plugin Allure Jenkins
+                        allure includeProperties: false,
+                               jdk: '',
+                               results: [[path: 'allure-results']]
+                    } catch (Exception e) {
+                        echo "Impossible de générer le rapport Allure (le stash est peut-être vide) : ${e.message}"
+                    }
+                } else {
+                    // Si htmlextra a été choisi, on archive le fichier HTML
+                    archiveArtifacts artifacts: 'newman-report.html', allowEmptyArchive: true
                 }
             }
         }
